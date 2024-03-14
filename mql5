@@ -1,0 +1,116 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                                     Master Pullback|
+//|                                 https://www.forexroboteasy.com    |
+//|                                         Developed by Forex Robot Easy Team|
+//+------------------------------------------------------------------+
+
+// Include necessary libraries and define variables
+#include <Trade\Trade.mqh>
+#include <Arrays\ArrayObj.mqh>
+
+input double RiskPercentage = 2.0; // Risk percentage per trade
+double StopLoss; // Stop loss level
+double TakeProfit; // Take profit level
+double RiskRewardRatio; // Risk-to-reward ratio
+CTrade trade; // Trade object
+CArrayObj Trades; // Array to store open trades
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   // Calculate stop loss and take profit levels based on risk percentage
+   StopLoss = NormalizeDouble(SymbolInfoDouble(_Symbol, SYMBOL_ASK) - (RiskPercentage / 100.0) * SymbolInfoDouble(_Symbol, SYMBOL_POINT), Digits);
+   TakeProfit = NormalizeDouble(SymbolInfoDouble(_Symbol, SYMBOL_ASK) + (RiskPercentage / 100.0) * SymbolInfoDouble(_Symbol, SYMBOL_POINT), Digits);
+   
+   // Print stop loss and take profit levels
+   Print('Stop Loss: ', StopLoss);
+   Print('Take Profit: ', TakeProfit);
+   
+   return INIT_SUCCEEDED;
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   // Close any open trades before deinitialization
+   for (int i = 0; i < Trades.Total(); i++)
+   {
+      trade.SelectByIndex(i);
+      trade.Close(trade.PositionGetDouble(POSITION_VOLUME));
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   // Check for pullback conditions
+   if (IsPullback())
+   {
+      // Get pullback duration and strength
+      double duration = GetPullbackDuration();
+      double strength = GetPullbackStrength();
+      
+      // Calculate risk-to-reward ratio
+      RiskRewardRatio = (TakeProfit - SymbolInfoDouble(_Symbol, SYMBOL_BID)) / (SymbolInfoDouble(_Symbol, SYMBOL_ASK) - StopLoss);
+      
+      // Determine entry and exit points for trades based on the pullback
+      double entryPrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      double exitPrice = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      
+      // Open a trade with calculated entry and exit points
+      trade.Buy(Lots(), entryPrice, StopLoss, TakeProfit, 'Pullback Buy');
+      
+      // Store the trade in the array
+      Trades.Add(trade);
+      
+      // Print trade information
+      Print('Trade opened - Entry Price: ', entryPrice, ', Exit Price: ', exitPrice, ', Duration: ', duration, ', Strength: ', strength);
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Function to determine if pullback conditions are met              |
+//+------------------------------------------------------------------+
+bool IsPullback()
+{
+   // Implement pullback identification logic here
+   // Return true if pullback conditions are met, otherwise false
+   return true;
+}
+
+//+------------------------------------------------------------------+
+//| Function to determine the duration of the pullback                |
+//+------------------------------------------------------------------+
+double GetPullbackDuration()
+{
+   // Implement pullback duration calculation logic here
+   // Return the calculated duration
+   return 0.0;
+}
+
+//+------------------------------------------------------------------+
+//| Function to determine the strength of the pullback                |
+//+------------------------------------------------------------------+
+double GetPullbackStrength()
+{
+   // Implement pullback strength calculation logic here
+   // Return the calculated strength
+   return 0.0;
+}
+
+//+------------------------------------------------------------------+
+//| Function to calculate the lot size for each trade                 |
+//+------------------------------------------------------------------+
+double Lots()
+{
+   // Implement lot size calculation logic here
+   // Return the calculated lot size
+   return 0.01;
+}
